@@ -1,0 +1,8 @@
+sampling_rate: 44100
+audio_duration: 2
+n_folds: 4
+max_epochs: 50
+learning_rate: 0.001
+use_mfcc: True
+n_mfcc: 40
+batch_size: 64

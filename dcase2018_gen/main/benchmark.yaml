@@ -1,0 +1,1 @@
+cnn2d_mfcc: {accuracy: '58.970', map@3: '64.855'}
