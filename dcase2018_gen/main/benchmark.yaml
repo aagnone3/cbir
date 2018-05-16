@@ -1,1 +1,2 @@
 cnn2d_mfcc: {accuracy: '58.970', map@3: '64.855'}
+hmm_10_state: {accuracy: '9.516', map@3: '14.292'}

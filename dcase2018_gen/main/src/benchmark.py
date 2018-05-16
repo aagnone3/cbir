@@ -23,7 +23,7 @@ def build_parser():
                         help="Path to file with a 'label' column with the 3 highest probability class indices. "
                              "The class indices may be acquired via the class encoder.")
     parser.add_argument(dest="tag", help="Tag to describe the model/features of the current result.")
-    parser.add_argument("--update", dest="update", required=False, default=False)
+    parser.add_argument("--update", dest="update", action='store_true', required=False, default=False)
     return parser
 
 
