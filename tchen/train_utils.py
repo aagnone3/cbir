@@ -83,27 +83,6 @@ def attention_3d_block_2(inputs):
     return output_attention_mul
 
 
-def model_attention_applied_after_lstm():
-    inputs = Input(shape=(TIME_STEPS, INPUT_DIM,))
-    lstm_units = 32
-    lstm_out = LSTM(lstm_units, return_sequences=True)(inputs)
-    attention_mul = attention_3d_block(lstm_out)
-    attention_mul = Flatten()(attention_mul)
-    output = Dense(1, activation='sigmoid')(attention_mul)
-    model = Model(input=[inputs], output=output)
-    return model
-
-
-def model_attention_applied_before_lstm():
-    inputs = Input(shape=(TIME_STEPS, INPUT_DIM,))
-    attention_mul = attention_3d_block(inputs)
-    lstm_units = 32
-    attention_mul = LSTM(lstm_units, return_sequences=False)(attention_mul)
-    output = Dense(1, activation='sigmoid')(attention_mul)
-    model = Model(input=[inputs], output=output)
-    return model
-
-
 def base_model_1(image_shape, classes_num, dropout_rate):
     input_layer = Input(shape=(image_shape[1], image_shape[2], image_shape[3]))
     cnn = Conv2D(128, (3, 3), padding='valid')(input_layer)
@@ -121,7 +100,7 @@ def base_model_1(image_shape, classes_num, dropout_rate):
     #dense_a = Lambda(global_average_pooling,output_shape=global_average_pooling_shape)(cnn)
     dense_b = Dense(128, activation='relu')(dense_a)
     cla = Dense(128, activation='linear')(dense_a)
-    att = Dense(128, activation='softmax')(dense_a)
+    att = Dense(128, activation='sigmoid')(dense_a)
     dense_b = Lambda(attention_pooling, output_shape=pooling_shape)([cla, att])
     b1 = BatchNormalization()(dense_b)
     b1 = Activation(activation='relu')(b1)
@@ -228,18 +207,20 @@ def base_model_3(image_shape, classes_num, dropout_rate):
 def base_model_4(image_shape, classes_num, dropout_rate):
 
     input_layer = Input(shape=(image_shape[1], image_shape[2], image_shape[3]))
-    cnn = Conv2D(64, (3, 3), padding='same')(input_layer)
+    cnn = Conv2D(128, (3, 3), padding='same')(input_layer)
+    cnn = Activation('relu')(cnn)
+    cnn = MaxPooling2D((1, 5))(cnn)
+    #cnn = MaxPooling2D((1, 2))(cnn)
+    cnn = Conv2D(128, (3, 3), padding='same')(cnn)
+    cnn = Activation('relu')(cnn)
+    cnn = MaxPooling2D((1, 4))(cnn)
+    # cnn = MaxPooling2D((1, 2))(cnn)
+    cnn = Conv2D(128, (3, 3), padding='same')(cnn)
     cnn = Activation('relu')(cnn)
     cnn = MaxPooling2D((1, 2))(cnn)
-    cnn = Conv2D(64, (3, 3), padding='same')(cnn)
-    cnn = Activation('relu')(cnn)
-    cnn = MaxPooling2D((1, 2))(cnn)
-    cnn = Conv2D(64, (3, 3), padding='same')(cnn)
-    cnn = Activation('relu')(cnn)
-    cnn = MaxPooling2D((1, 2))(cnn)
-    res_cnn = Reshape((499,5*64))(cnn)
+    res_cnn = Reshape((499,128))(cnn)
     attention_mul = attention_3d_block_2(res_cnn)
-    bi_gru = LSTM(256, recurrent_dropout=dropout_rate,return_sequences=False)(attention_mul)
+    bi_gru = Bidirectional(LSTM(256, recurrent_dropout=dropout_rate,return_sequences=False))(attention_mul)
     #dense_a = Dense(256, activation='relu')(bi_gru)
     #dense_b = Dense(256, activation='relu')(dense_a)
     #b1 = BatchNormalization()(dense_b)
@@ -249,7 +230,7 @@ def base_model_4(image_shape, classes_num, dropout_rate):
     #b2 = BatchNormalization()(b1)
     #b2 = Activation(activation='relu')(b2)
     #b2 = Dropout(dropout_rate)(b2)
-    output_layer = Dense(classes_num, activation='sigmoid')(bi_gru)
+    output_layer = Dense(classes_num, activation='softmax')(bi_gru)
     model = Model(inputs=input_layer, outputs=output_layer)
     return model, 'base_model_4'
 
@@ -257,19 +238,24 @@ def base_model_4(image_shape, classes_num, dropout_rate):
 def base_model_5(image_shape, classes_num, dropout_rate):
 
     input_layer = Input(shape=(image_shape[1], image_shape[2], image_shape[3]))
-    cnn = Conv2D(64, (5, 3), padding='same')(input_layer)
-    cnn = Activation('relu')(cnn)
-    cnn = MaxPooling2D((1, 5))(cnn)
-    cnn = Conv2D(64, (5, 3), padding='same')(cnn)
-    cnn = Activation('relu')(cnn)
-    cnn = MaxPooling2D((1, 4))(cnn)
-    cnn = Conv2D(64, (5, 3), padding='same')(cnn)
+    cnn = Conv2D(64, (3, 3), padding='same')(input_layer)
     cnn = Activation('relu')(cnn)
     cnn = MaxPooling2D((1, 2))(cnn)
-    res_cnn = Reshape((499,64))(cnn)
-    attention_mul = attention_3d_block(res_cnn)
-    bi_gru = LSTM(256, recurrent_dropout=dropout_rate,return_sequences=False)(attention_mul)
-    dense_a = Dense(256, activation='relu')(bi_gru)
+    cnn = Conv2D(64, (3, 3), padding='same')(cnn)
+    cnn = Activation('relu')(cnn)
+    cnn = MaxPooling2D((1, 2))(cnn)
+    cnn = Conv2D(64, (3, 3), padding='same')(cnn)
+    cnn = Activation('relu')(cnn)
+    cnn = MaxPooling2D((1, 2))(cnn)
+
+    #cnn = Conv2D(10, (493, 34), padding='valid')(cnn)
+    #cnn = Activation('relu')(cnn)
+    res_cnn = Reshape((499,5*64))(cnn)
+    bi_gru = LSTM(256, recurrent_dropout=dropout_rate,return_sequences=True)(res_cnn)
+    attention_mul = attention_3d_block_2(bi_gru)
+    attention_mul = Flatten()(attention_mul)
+    dense_a = Dense(256, activation='relu')(attention_mul)
+    #dense_a = Lambda(global_average_pooling,output_shape=global_average_pooling_shape)(cnn)
     dense_b = Dense(256, activation='relu')(dense_a)
     b1 = BatchNormalization()(dense_b)
     b1 = Activation(activation='relu')(b1)
@@ -278,6 +264,6 @@ def base_model_5(image_shape, classes_num, dropout_rate):
     b2 = BatchNormalization()(b1)
     b2 = Activation(activation='relu')(b2)
     b2 = Dropout(dropout_rate)(b2)
-    output_layer = Dense(classes_num, activation='sigmoid')(b2)
+    output_layer = Dense(classes_num, activation='softmax')(b2)
     model = Model(inputs=input_layer, outputs=output_layer)
     return model, 'base_model_5'

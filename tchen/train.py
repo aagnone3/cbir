@@ -77,7 +77,7 @@ print(model.summary())
 
 # opt = optimizers.Adadelta(lr=1.0, rho=0.95, epsilon=1e-08, decay=1e-4)
 model.compile(optimizer='Adam', loss=losses.categorical_crossentropy, metrics=[metrics.categorical_accuracy])
-model.fit_generator(generator=audio_gen.next_train(), steps_per_epoch=step_per_epoch, epochs=1,
+model.fit_generator(generator=audio_gen.next_train(), steps_per_epoch=step_per_epoch, epochs=100,
                     validation_data=valid_gen.next_train(), validation_steps=validation_step)
 # model.save('models/attention_base_model_1_delta.h5')
 # model = load_model('models/attention_base_model_1_delta.h5')
