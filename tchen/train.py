@@ -31,7 +31,7 @@ import pandas as pd
 
 
 classes_num = 41
-dropout_rate = 0.25
+dropout_rate = 0.5
 batch_size = 64
 audio_path = 'audio/audio_train/'
 mode = 1
@@ -71,7 +71,7 @@ print(image_shape)
 
 
 # Attention CNN
-model, model_name = base_model_1(image_shape, classes_num, dropout_rate)
+model, model_name = base_model_4(image_shape, classes_num, dropout_rate)
 print(model.summary())
 
 
@@ -81,7 +81,7 @@ model.fit_generator(generator=audio_gen.next_train(), steps_per_epoch=step_per_e
                     validation_data=valid_gen.next_train(), validation_steps=validation_step)
 # model.save('models/attention_base_model_1_delta.h5')
 # model = load_model('models/attention_base_model_1_delta.h5')
-X_test, y_true = audio_gen.get_test()
+X_test, y_true = valid_gen.get_test()
 
 y_prob = model.predict(X_test)
 y_pred = np.argmax(y_prob, axis=1)
