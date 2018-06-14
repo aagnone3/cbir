@@ -22,7 +22,7 @@ print (K.image_dim_ordering())
 print (K.image_data_format())
 print (K.backend())
 
-from train_utils import base_model_1, benchmark_model
+from train_utils import base_model_1, base_model_4, benchmark_model
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.metrics import classification_report
 
@@ -33,7 +33,7 @@ import pandas as pd
 classes_num = 41
 dropout_rate = 0.5
 batch_size = 64
-audio_path = 'audio/audio_train/'
+audio_path = '/home/aagnone/data/dcase2018_gen/'
 mode = 1
 
 df = pd.read_csv('metadata/train_set.csv')
@@ -90,4 +90,3 @@ print(classification_report(y_true, y_pred))
 
 # with open('results/f1_score_2018_task_2.txt', 'ab') as fw:
 #     fw.write('model name: %s mode: %d f1: %f\n' % (model_name, mode, macro_f_measure))
-
